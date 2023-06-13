@@ -1,8 +1,7 @@
-﻿namespace PanoramicData.Engines
+﻿namespace PanoramicData.Engines;
+
+public interface IEngine
 {
-	public interface IEngine
-	{
-		Task StartAsync();
-		Task StopAsync();
-	}
+	Task StartAsync();
+	Task StopAsync();
 }

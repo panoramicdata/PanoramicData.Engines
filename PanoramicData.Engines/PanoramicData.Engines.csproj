@@ -1,24 +1,28 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/panoramicdata/PanoramicData.Engines</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/panoramicdata/PanoramicData.Engines</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageTags>engine</PackageTags>
-    <PackageReleaseNotes>Initial release</PackageReleaseNotes>
-    <Description>Engines made simple</Description>
-    <Copyright>Copyright Panoramic Data Limited 2019</Copyright>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageProjectUrl>https://github.com/panoramicdata/PanoramicData.Engines</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/panoramicdata/PanoramicData.Engines</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageTags>engine</PackageTags>
+		<PackageReleaseNotes>Initial release</PackageReleaseNotes>
+		<Description>Engines made simple</Description>
+		<Copyright>Copyright Panoramic Data Limited 2019</Copyright>
+		<LangVersion>latest</LangVersion>
+		<Nullable>enable</Nullable>
+		<EnableNETAnalyzers>true</EnableNETAnalyzers>
+		<AnalysisMode>All</AnalysisMode>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
-    <PackageReference Include="Nerdbank.GitVersioning" Version="3.0.25">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
+		<PackageReference Include="Nerdbank.GitVersioning" Version="3.0.25">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
 
 </Project>
