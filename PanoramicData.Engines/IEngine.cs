@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace PanoramicData.Engines
+﻿namespace PanoramicData.Engines
 {
 	public interface IEngine
 	{

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace PanoramicData.Engines
+﻿namespace PanoramicData.Engines
 {
 	public class EngineException : Exception
 	{

@@ -1,18 +1,14 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace PanoramicData.Engines
+﻿namespace PanoramicData.Engines
 {
-    /// <summary>
-    /// <para>
-    /// Async-friendly Timer implementation.
-    /// Provides a mechanism for executing an async method on
-    /// a thread pool thread at specified intervals.
-    /// </para>
-    /// <para>This class cannot be inherited.</para>
-    /// </summary>
-    public sealed class TimerAsync : IDisposable
+	/// <summary>
+	/// <para>
+	/// Async-friendly Timer implementation.
+	/// Provides a mechanism for executing an async method on
+	/// a thread pool thread at specified intervals.
+	/// </para>
+	/// <para>This class cannot be inherited.</para>
+	/// </summary>
+	public sealed class TimerAsync : IDisposable
     {
         private readonly Func<CancellationToken, Task> _scheduledAction;
         private readonly TimeSpan _dueTime;
