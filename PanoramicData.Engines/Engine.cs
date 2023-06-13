@@ -39,16 +39,18 @@ namespace PanoramicData.Engines
 		/// </summary>
 		public async Task StartAsync()
 		{
-			switch (EngineState)
-			{
-				case EngineState.Stopped:
-					EngineState = EngineState.Starting;
-					break;
-				default:
-					throw new InvalidOperationException($"{Name}: Cannot start when it is {EngineState}");
-			}
-			await Startup().ConfigureAwait(false);
-			EngineState = EngineState.Started;
+			if (EngineState == EngineState.Stopped)
+{
+	EngineState = EngineState.Starting;
+}
+else
+{
+	throw new InvalidOperationException($"{Name}: Cannot start when it is {EngineState}");
+}
+
+await Startup().ConfigureAwait(false);
+EngineState = EngineState.Started;
+
 		}
 
 		/// <summary>

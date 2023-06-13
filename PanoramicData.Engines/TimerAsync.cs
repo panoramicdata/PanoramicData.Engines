@@ -37,7 +37,7 @@ namespace PanoramicData.Engines
 		/// Initializes a new instance of the TimerAsync.
 		/// </summary>
 		/// <param name="scheduledAction">A delegate representing a method to be executed.</param>
-		/// <param name="dueTime">The amount of time to delay befoe scheduledAction is invoked for the first time.</param>
+		/// <param name="dueTime">The amount of time to delay before scheduledAction is invoked for the first time.</param>
 		/// <param name="period">The time interval between invocations of the scheduledAction.</param>
 		/// <param name="canStartNextActionBeforePreviousIsCompleted">
 		///   Whether or not the interval starts at the end of the previous scheduled action or at precise points in time.
