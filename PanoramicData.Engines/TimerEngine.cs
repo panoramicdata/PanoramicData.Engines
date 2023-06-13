@@ -12,30 +12,30 @@ namespace PanoramicData.Engines
 		public int ExecutionCount { get; private set; }
 		protected long ProcessingElapsedTimeMs { private get; set; }
 
-        /// <summary>
-        /// A timer based engine
-        /// </summary>
-        /// <param name="name">Engine name</param>
-        /// <param name="interval">The delay after execution completes before the next execution is attempted.</param>
-        protected AsyncTimerEngine(string name, TimeSpan interval)
+		/// <summary>
+		/// A timer based engine
+		/// </summary>
+		/// <param name="name">Engine name</param>
+		/// <param name="interval">The delay after execution completes before the next execution is attempted.</param>
+		protected AsyncTimerEngine(string name, TimeSpan interval)
 			: this(name, interval, default)
-        {
+		{
 
-        }
+		}
 
-        protected AsyncTimerEngine(string name, TimeSpan interval, ILoggerFactory loggerFactory)
-            : base(name, loggerFactory)
-        {
-            _timer = new TimerAsync(TimerMethod, TimeSpan.FromSeconds(1), interval, false);
-            _logger = loggerFactory?.CreateLogger<AsyncTimerEngine>();
-            ProcessingElapsedTimeMs = 0;
-        }
+		protected AsyncTimerEngine(string name, TimeSpan interval, ILoggerFactory loggerFactory)
+			: base(name, loggerFactory)
+		{
+			_timer = new TimerAsync(TimerMethod, TimeSpan.FromSeconds(1), interval, false);
+			_logger = loggerFactory?.CreateLogger<AsyncTimerEngine>();
+			ProcessingElapsedTimeMs = 0;
+		}
 
 
-        /// <summary>
-        /// Whether the TimerEngineMethod is executing
-        /// </summary>
-        private bool IsTimerEngineMethodExecuting { get; set; }
+		/// <summary>
+		/// Whether the TimerEngineMethod is executing
+		/// </summary>
+		private bool IsTimerEngineMethodExecuting { get; set; }
 
 		protected sealed override async Task Startup()
 		{
