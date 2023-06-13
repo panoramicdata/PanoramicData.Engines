@@ -47,11 +47,15 @@ namespace PanoramicData.Engines
 			_scheduledAction = scheduledAction ?? throw new ArgumentNullException(nameof(scheduledAction));
 
 			if (dueTime < TimeSpan.Zero)
+			{
 				throw new ArgumentOutOfRangeException(nameof(dueTime), "due time must be equal or greater than zero");
+			}
 			_dueTime = dueTime;
 
 			if (period < TimeSpan.Zero)
+			{
 				throw new ArgumentOutOfRangeException(nameof(period), "period must be equal or greater than zero");
+			}
 			_period = period;
 
 			_canStartNextActionBeforePreviousIsCompleted = canStartNextActionBeforePreviousIsCompleted;
@@ -65,14 +69,18 @@ namespace PanoramicData.Engines
 		public void Start()
 		{
 			if (_disposed)
+			{
 				throw new ObjectDisposedException(GetType().FullName);
+			}
 
 			_semaphore.Wait();
 
 			try
 			{
 				if (IsRunning)
+				{
 					return;
+				}
 
 				_cancellationSource = new CancellationTokenSource();
 				_scheduledTask = RunScheduledAction();
@@ -98,7 +106,9 @@ namespace PanoramicData.Engines
 			try
 			{
 				if (!IsRunning)
+				{
 					return;
+				}
 
 				_cancellationSource.Cancel();
 
