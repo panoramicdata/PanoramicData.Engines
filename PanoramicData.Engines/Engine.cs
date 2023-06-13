@@ -19,7 +19,6 @@ namespace PanoramicData.Engines
 			_engineState = EngineState.Stopped;
 		}
 
-
 		public EngineState EngineState
 		{
 			get => _engineState;
@@ -70,6 +69,7 @@ namespace PanoramicData.Engines
 				_logger?.LogError(message);
 				throw new InvalidOperationException(message);
 			}
+
 			await Shutdown().ConfigureAwait(false);
 			EngineState = EngineState.Stopped;
 		}
