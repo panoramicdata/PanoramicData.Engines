@@ -99,7 +99,9 @@ namespace PanoramicData.Engines
 		public async Task Stop()
 		{
 			if (_disposed)
+			{
 				throw new ObjectDisposedException(GetType().FullName);
+			}
 
 			await _semaphore.WaitAsync().ConfigureAwait(false);
 
@@ -143,7 +145,6 @@ namespace PanoramicData.Engines
 																	await Task.Delay(_period, _cancellationSource.Token).ConfigureAwait(false);
 																}
 															}
-															catch (OperationCanceledException) { }
 															catch (Exception ex)
 															{
 																try

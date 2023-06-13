@@ -2,7 +2,7 @@
 
 namespace PanoramicData.Engines
 {
-	internal class EngineException : Exception
+	public class EngineException : Exception
 	{
 		public EngineException(string message, Exception exception) : base(message, exception)
 		{
