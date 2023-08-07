@@ -1,3 +1,7 @@
+using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
+
 namespace PanoramicData.Engines;
 
 public abstract class Engine : IEngine
