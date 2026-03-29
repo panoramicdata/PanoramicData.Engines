@@ -1,4 +1,8 @@
-﻿namespace PanoramicData.Engines;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace PanoramicData.Engines;
 
 /// <summary>
 /// <para>
@@ -13,8 +17,8 @@ public sealed class TimerAsync : IDisposable
 	private readonly Func<CancellationToken, Task> _scheduledAction;
 	private readonly TimeSpan _dueTime;
 	private readonly TimeSpan _period;
-	private CancellationTokenSource _cancellationSource;
-	private Task _scheduledTask;
+	private CancellationTokenSource? _cancellationSource;
+	private Task? _scheduledTask;
 	private readonly SemaphoreSlim _semaphore;
 	private bool _disposed;
 	private readonly bool _canStartNextActionBeforePreviousIsCompleted;
@@ -22,7 +26,7 @@ public sealed class TimerAsync : IDisposable
 	/// <summary>
 	/// Occurs when an error is raised in the scheduled action
 	/// </summary>
-	public event EventHandler<Exception> OnError;
+	public event EventHandler<Exception>? OnError;
 
 	/// <summary>
 	/// Gets the running status of the TimerAsync instance.
@@ -117,9 +121,9 @@ public sealed class TimerAsync : IDisposable
 				return;
 			}
 
-			_cancellationSource.Cancel();
+			_cancellationSource!.Cancel();
 
-			await _scheduledTask.ConfigureAwait(false);
+			await _scheduledTask!.ConfigureAwait(false);
 		}
 		finally
 		{
@@ -129,43 +133,43 @@ public sealed class TimerAsync : IDisposable
 	}
 
 	private Task RunScheduledAction() => Task.Run(async () =>
-													{
-														try
-														{
-															await Task.Delay(_dueTime, _cancellationSource.Token).ConfigureAwait(false);
+									{
+										try
+										{
+											await Task.Delay(_dueTime, _cancellationSource!.Token).ConfigureAwait(false);
 
-															while (true)
-															{
-																if (_canStartNextActionBeforePreviousIsCompleted)
-																{
+											while (true)
+											{
+												if (_canStartNextActionBeforePreviousIsCompleted)
+												{
 #pragma warning disable 4014
-																	_scheduledAction(_cancellationSource.Token);
+													_scheduledAction(_cancellationSource.Token);
 #pragma warning restore 4014
-																}
-																else
-																{
-																	await _scheduledAction(_cancellationSource.Token).ConfigureAwait(false);
-																}
+												}
+												else
+												{
+													await _scheduledAction(_cancellationSource.Token).ConfigureAwait(false);
+												}
 
-																await Task.Delay(_period, _cancellationSource.Token).ConfigureAwait(false);
-															}
-														}
-														catch (Exception ex)
-														{
-															try
-															{
-																OnError?.Invoke(this, ex);
-															}
-															catch
-															{
-																// ignored
-															}
-														}
-														finally
-														{
-															IsRunning = false;
-														}
-													}, _cancellationSource.Token);
+												await Task.Delay(_period, _cancellationSource.Token).ConfigureAwait(false);
+											}
+										}
+										catch (Exception ex)
+										{
+											try
+											{
+												OnError?.Invoke(this, ex);
+											}
+											catch
+											{
+												// ignored
+											}
+										}
+										finally
+										{
+											IsRunning = false;
+										}
+									}, _cancellationSource!.Token);
 
 	private void Dispose(bool disposing)
 	{

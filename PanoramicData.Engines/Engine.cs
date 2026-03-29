@@ -1,3 +1,7 @@
+using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
+
 namespace PanoramicData.Engines;
 
 public abstract class Engine : IEngine
@@ -12,10 +16,10 @@ public abstract class Engine : IEngine
 		_engineState = EngineState.Stopped;
 	}
 
-	protected Engine(string name, ILoggerFactory loggerFactory)
+	protected Engine(string name, ILoggerFactory? loggerFactory)
 	{
 		Name = name;
-		_logger = loggerFactory.CreateLogger<Engine>();
+		_logger = loggerFactory?.CreateLogger<Engine>();
 		_engineState = EngineState.Stopped;
 	}
 

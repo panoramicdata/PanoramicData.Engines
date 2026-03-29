@@ -1,9 +1,14 @@
+using Microsoft.Extensions.Logging;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace PanoramicData.Engines;
 
 public abstract class AsyncTimerEngine : Engine, IDisposable
 {
 	private readonly TimerAsync _timer;
-	private readonly ILogger _logger;
+	private readonly ILogger? _logger;
 	public int ExecutionCount { get; private set; }
 	protected long ProcessingElapsedTimeMs { private get; set; }
 
@@ -13,12 +18,12 @@ public abstract class AsyncTimerEngine : Engine, IDisposable
 	/// <param name="name">Engine name</param>
 	/// <param name="interval">The delay after execution completes before the next execution is attempted.</param>
 	protected AsyncTimerEngine(string name, TimeSpan interval)
-		: this(name, interval, default)
+		: this(name, interval, default(ILoggerFactory?))
 	{
 
 	}
 
-	protected AsyncTimerEngine(string name, TimeSpan interval, ILoggerFactory loggerFactory)
+	protected AsyncTimerEngine(string name, TimeSpan interval, ILoggerFactory? loggerFactory)
 		: base(name, loggerFactory)
 	{
 		_timer = new TimerAsync(TimerMethod, TimeSpan.FromSeconds(1), interval, false);
