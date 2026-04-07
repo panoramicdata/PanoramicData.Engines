@@ -5,12 +5,23 @@ using System.Threading.Tasks;
 
 namespace PanoramicData.Engines;
 
-public abstract class AsyncTimerEngine : Engine, IDisposable
+/// <summary>
+/// An engine that executes work on a timer interval.
+/// </summary>
+public abstract partial class AsyncTimerEngine : Engine, IDisposable
 {
 	private readonly TimerAsync _timer;
 	private readonly ILogger? _logger;
+
+	/// <summary>
+	/// Gets the number of times the timer method has executed.
+	/// </summary>
 	public int ExecutionCount { get; private set; }
-	protected long ProcessingElapsedTimeMs { private get; set; }
+
+	/// <summary>
+	/// Gets or sets the elapsed processing time in milliseconds.
+	/// </summary>
+	protected long ProcessingElapsedTimeMs { get; set; }
 
 	/// <summary>
 	/// A timer based engine
@@ -23,6 +34,12 @@ public abstract class AsyncTimerEngine : Engine, IDisposable
 
 	}
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="AsyncTimerEngine"/> class with logging support.
+	/// </summary>
+	/// <param name="name">Engine name.</param>
+	/// <param name="interval">The delay after execution completes before the next execution is attempted.</param>
+	/// <param name="loggerFactory">Optional logger factory.</param>
 	protected AsyncTimerEngine(string name, TimeSpan interval, ILoggerFactory? loggerFactory)
 		: base(name, loggerFactory)
 	{
@@ -37,6 +54,7 @@ public abstract class AsyncTimerEngine : Engine, IDisposable
 	/// </summary>
 	private bool IsTimerEngineMethodExecuting { get; set; }
 
+	/// <inheritdoc />
 	protected sealed override async Task Startup()
 	{
 		// Do pre-startup in derived classes
@@ -46,12 +64,13 @@ public abstract class AsyncTimerEngine : Engine, IDisposable
 		_timer.Start();
 	}
 
+	/// <inheritdoc />
 	protected sealed override async Task Shutdown()
 	{
 		await _timer.Stop().ConfigureAwait(false);
 		while (IsTimerEngineMethodExecuting)
 		{
-			Thread.Sleep(1000);
+			await Task.Delay(1000).ConfigureAwait(false);
 		}
 
 		// Do post-shutdown in derived classes
@@ -74,15 +93,14 @@ public abstract class AsyncTimerEngine : Engine, IDisposable
 	protected abstract Task PostShutdown();
 
 	/// <summary>
-	/// Starts the engine
+	/// Timer callback that invokes the engine method.
 	/// </summary>
-	/// <param name="sender"></param>
-	/// <param name="e"></param>
+	/// <param name="cancellationToken">Cancellation token.</param>
 	private async Task TimerMethod(CancellationToken cancellationToken)
 	{
 		if (IsTimerEngineMethodExecuting)
 		{
-			throw new InvalidOperationException(PrettyPrint("Can't execute engine method as it's already executing."));
+			throw new InvalidOperationException($"{Name}: Can't execute engine method as it's already executing.");
 		}
 
 		IsTimerEngineMethodExecuting = true;
@@ -97,12 +115,22 @@ public abstract class AsyncTimerEngine : Engine, IDisposable
 		{
 			foreach (var ex in aggregateException.Flatten().InnerExceptions)
 			{
-				_logger?.LogWarning(PrettyPrint($"Exception (from aggregate exception) of type {ex.GetType()} thrown in timer method: {ex}"));
+				if (_logger is not null)
+				{
+					LogTimerWarning(_logger, Name, ex.GetType().ToString(), ex.ToString());
+				}
 			}
 		}
-		catch (Exception ex)
+		catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
 		{
-			_logger?.LogWarning(PrettyPrint($"Exception of type {ex.GetType()} thrown in timer method: {ex}"));
+			// Expected during shutdown — do not log
+		}
+		catch (Exception ex) when (!cancellationToken.IsCancellationRequested)
+		{
+			if (_logger is not null)
+			{
+				LogTimerWarning(_logger, Name, ex.GetType().ToString(), ex.ToString());
+			}
 		}
 		finally
 		{
@@ -114,13 +142,20 @@ public abstract class AsyncTimerEngine : Engine, IDisposable
 		}
 	}
 
+	/// <summary>
+	/// Releases all resources used by the engine.
+	/// </summary>
 	public void Dispose()
 	{
 		Dispose(true);
 		GC.SuppressFinalize(this);
 	}
 
-	private void Dispose(bool disposing)
+	/// <summary>
+	/// Releases resources used by the engine.
+	/// </summary>
+	/// <param name="disposing">True to release managed resources.</param>
+	protected virtual void Dispose(bool disposing)
 	{
 		if (!disposing)
 		{
@@ -129,4 +164,7 @@ public abstract class AsyncTimerEngine : Engine, IDisposable
 
 		_timer?.Dispose();
 	}
+
+	[LoggerMessage(Level = LogLevel.Warning, Message = "{EngineName}: Exception of type {ExceptionType} thrown in timer method: {ExceptionDetails}")]
+	private static partial void LogTimerWarning(ILogger logger, string engineName, string exceptionType, string exceptionDetails);
 }

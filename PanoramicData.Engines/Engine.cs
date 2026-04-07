@@ -4,11 +4,18 @@ using System.Threading.Tasks;
 
 namespace PanoramicData.Engines;
 
-public abstract class Engine : IEngine
+/// <summary>
+/// Base class for engines that can be started, stopped, and restarted.
+/// </summary>
+public abstract partial class Engine : IEngine
 {
 	private EngineState _engineState;
 	private readonly ILogger<Engine>? _logger;
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="Engine"/> class.
+	/// </summary>
+	/// <param name="name">The engine name.</param>
 	protected Engine(string name)
 	{
 		Name = name;
@@ -16,6 +23,11 @@ public abstract class Engine : IEngine
 		_engineState = EngineState.Stopped;
 	}
 
+	/// <summary>
+	/// Initializes a new instance of the <see cref="Engine"/> class with logging support.
+	/// </summary>
+	/// <param name="name">The engine name.</param>
+	/// <param name="loggerFactory">Optional logger factory.</param>
 	protected Engine(string name, ILoggerFactory? loggerFactory)
 	{
 		Name = name;
@@ -23,13 +35,19 @@ public abstract class Engine : IEngine
 		_engineState = EngineState.Stopped;
 	}
 
+	/// <summary>
+	/// Gets the current state of the engine.
+	/// </summary>
 	public EngineState EngineState
 	{
 		get => _engineState;
 		private set
 		{
 			_engineState = value;
-			_logger?.LogInformation(PrettyPrint(value.ToString()));
+			if (_logger is not null)
+			{
+				LogEngineStateChanged(_logger, Name, value);
+			}
 		}
 	}
 
@@ -69,8 +87,12 @@ public abstract class Engine : IEngine
 		}
 		else
 		{
-			var message = PrettyPrint($"Cannot stop the engine when it is {EngineState}");
-			_logger?.LogError(message);
+			var message = $"{Name}: Cannot stop the engine when it is {EngineState}";
+			if (_logger is not null)
+			{
+				LogEngineError(_logger, message);
+			}
+
 			throw new InvalidOperationException(message);
 		}
 
@@ -78,18 +100,24 @@ public abstract class Engine : IEngine
 		EngineState = EngineState.Stopped;
 	}
 
-	protected string PrettyPrint(string message) => $"{Name}: {message}";
-
 	/// <summary>
 	///    Called to restart the engine
 	/// </summary>
 	// ReSharper disable once MemberCanBeProtected.Global
 	public async Task RestartAsync()
 	{
-		_logger?.LogInformation(PrettyPrint("Restarting"));
+		if (_logger is not null)
+		{
+			LogEngineInfo(_logger, Name, "Restarting");
+		}
+
 		await StopAsync().ConfigureAwait(false);
 		await StartAsync().ConfigureAwait(false);
-		_logger?.LogInformation(PrettyPrint("Restart complete"));
+
+		if (_logger is not null)
+		{
+			LogEngineInfo(_logger, Name, "Restart complete");
+		}
 	}
 
 	/// <summary>
@@ -101,4 +129,13 @@ public abstract class Engine : IEngine
 	///    Called when starting the engine
 	/// </summary>
 	protected abstract Task Startup();
+
+	[LoggerMessage(Level = LogLevel.Information, Message = "{EngineName}: {EngineState}")]
+	private static partial void LogEngineStateChanged(ILogger logger, string engineName, EngineState engineState);
+
+	[LoggerMessage(Level = LogLevel.Information, Message = "{EngineName}: {Message}")]
+	private static partial void LogEngineInfo(ILogger logger, string engineName, string message);
+
+	[LoggerMessage(Level = LogLevel.Error, Message = "{Message}")]
+	private static partial void LogEngineError(ILogger logger, string message);
 }

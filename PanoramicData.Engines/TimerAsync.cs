@@ -1,8 +1,28 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace PanoramicData.Engines;
+
+/// <summary>
+/// Event args wrapping an exception from a scheduled action.
+/// </summary>
+public class TimerAsyncErrorEventArgs : EventArgs
+{
+	/// <summary>
+	/// Initializes a new instance of the <see cref="TimerAsyncErrorEventArgs"/> class.
+	/// </summary>
+	/// <param name="exception">The exception that occurred.</param>
+	public TimerAsyncErrorEventArgs(Exception exception)
+	{
+		Exception = exception;
+	}
+
+	/// <summary>
+	/// Gets the exception that occurred.
+	/// </summary>
+	public Exception Exception { get; }
+}
 
 /// <summary>
 /// <para>
@@ -26,7 +46,7 @@ public sealed class TimerAsync : IDisposable
 	/// <summary>
 	/// Occurs when an error is raised in the scheduled action
 	/// </summary>
-	public event EventHandler<Exception>? OnError;
+	public event EventHandler<TimerAsyncErrorEventArgs>? OnError;
 
 	/// <summary>
 	/// Gets the running status of the TimerAsync instance.
@@ -39,15 +59,21 @@ public sealed class TimerAsync : IDisposable
 	/// <param name="scheduledAction">A delegate representing a method to be executed.</param>
 	/// <param name="dueTime">The amount of time to delay before scheduledAction is invoked for the first time.</param>
 	/// <param name="period">The time interval between invocations of the scheduledAction.</param>
-	/// <param name="canStartNextActionBeforePreviousIsCompleted">
-	///   Whether or not the interval starts at the end of the previous scheduled action or at precise points in time.
-	/// </param>
 	public TimerAsync(Func<CancellationToken, Task> scheduledAction, TimeSpan dueTime, TimeSpan period)
 		: this(scheduledAction, dueTime, period, false)
 	{
 
 	}
 
+	/// <summary>
+	/// Initializes a new instance of the TimerAsync.
+	/// </summary>
+	/// <param name="scheduledAction">A delegate representing a method to be executed.</param>
+	/// <param name="dueTime">The amount of time to delay before scheduledAction is invoked for the first time.</param>
+	/// <param name="period">The time interval between invocations of the scheduledAction.</param>
+	/// <param name="canStartNextActionBeforePreviousIsCompleted">
+	///   Whether or not the interval starts at the end of the previous scheduled action or at precise points in time.
+	/// </param>
 	public TimerAsync(Func<CancellationToken, Task> scheduledAction, TimeSpan dueTime, TimeSpan period, bool canStartNextActionBeforePreviousIsCompleted)
 	{
 		_scheduledAction = scheduledAction ?? throw new ArgumentNullException(nameof(scheduledAction));
@@ -77,10 +103,7 @@ public sealed class TimerAsync : IDisposable
 	/// </summary>
 	public void Start()
 	{
-		if (_disposed)
-		{
-			throw new ObjectDisposedException(GetType().FullName);
-		}
+		ObjectDisposedException.ThrowIf(_disposed, this);
 
 		_semaphore.Wait();
 
@@ -107,10 +130,7 @@ public sealed class TimerAsync : IDisposable
 	/// <returns>A task that completes when the timer is stopped.</returns>
 	public async Task Stop()
 	{
-		if (_disposed)
-		{
-			throw new ObjectDisposedException(GetType().FullName);
-		}
+		ObjectDisposedException.ThrowIf(_disposed, this);
 
 		await _semaphore.WaitAsync().ConfigureAwait(false);
 
@@ -121,7 +141,7 @@ public sealed class TimerAsync : IDisposable
 				return;
 			}
 
-			_cancellationSource!.Cancel();
+			await _cancellationSource!.CancelAsync().ConfigureAwait(false);
 
 			await _scheduledTask!.ConfigureAwait(false);
 		}
@@ -154,16 +174,24 @@ public sealed class TimerAsync : IDisposable
 												await Task.Delay(_period, _cancellationSource.Token).ConfigureAwait(false);
 											}
 										}
-										catch (Exception ex)
+										catch (OperationCanceledException) when (_cancellationSource!.IsCancellationRequested)
+										{
+											// Expected cancellation - no error to report
+										}
+#pragma warning disable CA1031 // Background timer must catch all exceptions to invoke the error handler
+										catch (Exception ex) when (!_cancellationSource!.IsCancellationRequested)
+#pragma warning restore CA1031
 										{
 											try
 											{
-												OnError?.Invoke(this, ex);
+												OnError?.Invoke(this, new TimerAsyncErrorEventArgs(ex));
 											}
+#pragma warning disable CA1031 // Error handler must not throw
 											catch
 											{
 												// ignored
 											}
+#pragma warning restore CA1031
 										}
 										finally
 										{
@@ -196,10 +224,5 @@ public sealed class TimerAsync : IDisposable
 	{
 		Dispose(true);
 		GC.SuppressFinalize(this);
-	}
-
-	~TimerAsync()
-	{
-		Dispose(false);
 	}
 }
