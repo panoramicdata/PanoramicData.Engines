@@ -1,7 +1,3 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace PanoramicData.Engines;
 
 /// <summary>
@@ -178,9 +174,7 @@ public sealed class TimerAsync : IDisposable
 										{
 											// Expected cancellation - no error to report
 										}
-#pragma warning disable CA1031 // Background timer must catch all exceptions to invoke the error handler
 										catch (Exception ex) when (!_cancellationSource!.IsCancellationRequested)
-#pragma warning restore CA1031
 										{
 											try
 											{
