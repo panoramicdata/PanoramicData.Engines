@@ -1,4 +1,4 @@
-namespace PanoramicData.Engines;
+﻿namespace PanoramicData.Engines;
 
 /// <summary>
 /// Event args wrapping an exception from a scheduled action.
@@ -148,50 +148,52 @@ public sealed class TimerAsync : IDisposable
 		}
 	}
 
-	private Task RunScheduledAction() => Task.Run(async () =>
-									{
-										try
-										{
-											await Task.Delay(_dueTime, _cancellationSource!.Token).ConfigureAwait(false);
+	private Task RunScheduledAction() => Task.Run(RunScheduledActionLoop, _cancellationSource!.Token);
 
-											while (true)
-											{
-												if (_canStartNextActionBeforePreviousIsCompleted)
-												{
+	private async Task RunScheduledActionLoop()
+	{
+		try
+		{
+			await Task.Delay(_dueTime, _cancellationSource!.Token).ConfigureAwait(false);
+
+			while (true)
+			{
+				if (_canStartNextActionBeforePreviousIsCompleted)
+				{
 #pragma warning disable 4014
-													_scheduledAction(_cancellationSource.Token);
+					_scheduledAction(_cancellationSource.Token);
 #pragma warning restore 4014
-												}
-												else
-												{
-													await _scheduledAction(_cancellationSource.Token).ConfigureAwait(false);
-												}
+				}
+				else
+				{
+					await _scheduledAction(_cancellationSource.Token).ConfigureAwait(false);
+				}
 
-												await Task.Delay(_period, _cancellationSource.Token).ConfigureAwait(false);
-											}
-										}
-										catch (OperationCanceledException) when (_cancellationSource!.IsCancellationRequested)
-										{
-											// Expected cancellation - no error to report
-										}
-										catch (Exception ex) when (!_cancellationSource!.IsCancellationRequested)
-										{
-											try
-											{
-												OnError?.Invoke(this, new TimerAsyncErrorEventArgs(ex));
-											}
+				await Task.Delay(_period, _cancellationSource.Token).ConfigureAwait(false);
+			}
+		}
+		catch (OperationCanceledException) when (_cancellationSource!.IsCancellationRequested)
+		{
+			// Expected cancellation - no error to report
+		}
+		catch (Exception ex) when (!_cancellationSource!.IsCancellationRequested)
+		{
+			try
+			{
+				OnError?.Invoke(this, new TimerAsyncErrorEventArgs(ex));
+			}
 #pragma warning disable CA1031 // Error handler must not throw
-											catch
-											{
-												// ignored
-											}
+			catch
+			{
+				// ignored
+			}
 #pragma warning restore CA1031
-										}
-										finally
-										{
-											IsRunning = false;
-										}
-									}, _cancellationSource!.Token);
+		}
+		finally
+		{
+			IsRunning = false;
+		}
+	}
 
 	private void Dispose(bool disposing)
 	{
