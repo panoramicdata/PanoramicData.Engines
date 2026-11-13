@@ -162,7 +162,7 @@ public abstract partial class AsyncTimerEngine : Engine, IDisposable
 			return;
 		}
 
-		_timer?.Dispose();
+		_timer.Dispose();
 	}
 
 	[LoggerMessage(Level = LogLevel.Warning, Message = "{EngineName}: Exception of type {ExceptionType} thrown in timer method: {ExceptionDetails}")]

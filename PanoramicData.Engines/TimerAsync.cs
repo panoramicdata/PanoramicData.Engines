@@ -148,7 +148,8 @@ public sealed class TimerAsync : IDisposable
 		}
 	}
 
-	private Task RunScheduledAction() => Task.Run(RunScheduledActionLoop, _cancellationSource!.Token);
+	// No token on Task.Run: cancelling before the task starts would make Stop() throw TaskCanceledException.
+	private Task RunScheduledAction() => Task.Run(RunScheduledActionLoop);
 
 	private async Task RunScheduledActionLoop()
 	{
@@ -207,7 +208,7 @@ public sealed class TimerAsync : IDisposable
 		if (disposing)
 		{
 			_cancellationSource?.Dispose();
-			_semaphore?.Dispose();
+			_semaphore.Dispose();
 		}
 
 		_disposed = true;
