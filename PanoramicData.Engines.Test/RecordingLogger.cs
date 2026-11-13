@@ -33,11 +33,13 @@ public sealed class RecordingLoggerFactory : ILoggerFactory
 
 	public void AddProvider(ILoggerProvider provider)
 	{
+		// Providers are not used
 	}
 
 	public ILogger CreateLogger(string categoryName) => Logger;
 
 	public void Dispose()
 	{
+		// Nothing to release
 	}
 }

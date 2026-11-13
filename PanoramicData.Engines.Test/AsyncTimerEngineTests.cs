@@ -6,7 +6,7 @@ namespace PanoramicData.Engines.Test;
 
 public class TestTimerEngine : AsyncTimerEngine
 {
-	public TestTimerEngine(TimeSpan interval, ILoggerFactory? loggerFactory = null)
+	public TestTimerEngine(TimeSpan interval, ILoggerFactory? loggerFactory)
 		: base("TestTimerEngine", interval, loggerFactory)
 	{
 	}
