@@ -42,7 +42,9 @@ public sealed class TimerAsync : IDisposable
 	/// <summary>
 	/// Occurs when an error is raised in the scheduled action
 	/// </summary>
+	#pragma warning disable S3264
 	public event EventHandler<TimerAsyncErrorEventArgs>? OnError;
+	#pragma warning restore S3264
 
 	/// <summary>
 	/// Gets the running status of the TimerAsync instance.
