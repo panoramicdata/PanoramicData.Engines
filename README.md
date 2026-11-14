@@ -6,6 +6,8 @@
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/d5d989bfdedc45458ded368bd0953d56)](https://app.codacy.com/gh/panoramicdata/PanoramicData.Engines/dashboard?utm_source=gh&utm_medium=referral&utm_content=panoramicdata/PanoramicData.Engines&utm_campaign=Badge_grade)
 
+> **Need help with APIs or .NET?** Panoramic Data are experts in APIs and .NET, and we can help with your development. [Contact us](https://www.panoramicdata.com/contact-us) or see our [software services](https://www.panoramicdata.com/services/software).
+
 PanoramicData.Engines provides an engine framework for things that can be started and stopped.
 See the TestEngine for an example of how to use this library.
 
